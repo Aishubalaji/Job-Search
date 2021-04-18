@@ -8,8 +8,8 @@ from botocore.client import Config
 import openpyxl
 
 # amazon s3 configurations
-ACCESS_KEY_ID = 'AKIAQX4HI3UTWRBUWJLD'
-ACCESS_SECRET_KEY = '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'
+ACCESS_KEY_ID = '#'
+ACCESS_SECRET_KEY = '#'
 BUCKET_NAME = 'jobs-csv-storage'
 
 # function to generate url
