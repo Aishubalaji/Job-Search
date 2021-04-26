@@ -13,13 +13,13 @@ class Form(Form):
 # home page
 @app.route('/')
 def index():
-    
+
 	form = Form(request.form)
 	return render_template('index.html', form=form)
 
 # results page
 @app.route('/results', methods=('GET', 'POST'))
-def search_resluts(): 
+def search_resluts():
 
     if request.method == 'POST':
         keyword = request.form['keyword']
@@ -29,5 +29,4 @@ def search_resluts():
     return render_template('job.html', length = number_of_jobs, keyword = keyword , location = location)
 
 if __name__=='__main__':
-	
-    app.run(debug=True)
+	app.run(debug=True)

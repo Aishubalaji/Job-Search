@@ -8,8 +8,8 @@ from botocore.client import Config
 import openpyxl
 
 # amazon s3 configurations
-ACCESS_KEY_ID = '#'
-ACCESS_SECRET_KEY = '#'
+ACCESS_KEY_ID = 'AKIAQX4HI3UTWRBUWJLD'
+ACCESS_SECRET_KEY = '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'
 BUCKET_NAME = 'jobs-csv-storage'
 
 # function to generate url
@@ -44,10 +44,10 @@ def transform_data(soup, joblists):
       today_date = date.today().strftime("%d/%m/%Y")
       base_url = "https://indeed.com"
       link = item.find('a').attrs['href']
-       
+
       job = {
           'Title': title,
-          'Company': company, 
+          'Company': company,
           'Location': location,
         # 'Rating': rating,
           'Salary': salary,
@@ -68,29 +68,27 @@ def get_next_page(soup):
         return None
 
 # function to save dataframe to xlsx
-def save_to_xlsx(df): 
+def save_to_xlsx(df):
     df.to_excel('job_list.xlsx', encoding='utf-8', columns=["Title","Company","Location","Salary","Today's date","Posted","Link"])
-    
-# function to upload xlsx to amazon s3 -> Needed for heroku deployment
+
+# function to upload xlsx to amazon s3 -> For heroku deployment
 def to_aws():
     data = open('job_list.xlsx', 'rb')
-
-    # amazon s3 Connect
+    # connect to AWS
     s3 = boto3.resource(
         's3',
         aws_access_key_id=ACCESS_KEY_ID,
         aws_secret_access_key=ACCESS_SECRET_KEY,
         config=Config(signature_version='s3v4')
     )
-
-    # xlsx file uploaded
+    # file upload
     s3.Bucket(BUCKET_NAME).put_object(Key='job_list.xlsx', Body=data, ACL='public-read')
 
 # main function
 def extract_job(keyword=None,location=None):
 
     joblists = []
-    
+
     if not location and not keyword:
         return 0
     url = generate_url(keyword,location)
@@ -102,9 +100,9 @@ def extract_job(keyword=None,location=None):
         url = get_next_page(c)
         if not url:
             break
-    
-    df = pd.DataFrame(joblists) 
+
+    df = pd.DataFrame(joblists)
     if len(df)>0:
         save_to_xlsx(df)
         to_aws()
-    return len(df)
+    return len(df) # returns the number of jobs
