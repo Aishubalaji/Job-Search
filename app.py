@@ -4,6 +4,7 @@ from wtforms import Form, TextField, StringField, SubmitField
 from jobscraper import extract_job, generate_url, extract_data, transform_data, get_next_page, save_to_xlsx, to_aws
 
 app = Flask(__name__)
+app.config['WTF_CSRF_ENABLED'] = False # Sensitive
 
 # input form
 class Form(Form):
