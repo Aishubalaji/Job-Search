@@ -8,9 +8,11 @@ from botocore.client import Config
 import openpyxl
 
 # amazon s3 configurations
-ACCESS_KEY_ID = 'AKIAQX4HI3UTWRBUWJLD'
-ACCESS_SECRET_KEY = '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'
+ACCESS_KEY_ID = ''
+ACCESS_SECRET_KEY = ''
 BUCKET_NAME = 'jobs-csv-storage'
+
+filename = 'job_list.xlsx'
 
 # function to generate url
 def generate_url(keyword,location):
@@ -31,13 +33,9 @@ def transform_data(soup, joblists):
       title = item.find('a').text.strip()
       company = item.find('span', class_='company').text.strip()
       location = item.find(class_='location').text.strip()
-    # try:
-    #  rating = item.find('a', class_='ratingNumber').text.strip()
-    # except:
-    #   rating = ''
       try:
         salary = item.find('span', class_='salaryText').text.strip()
-      except:
+      except AttributeError:
         salary = ''
       summary = item.find('div', class_='summary').text.strip().replace('\n','')
       posted_date = item.find('span', class_='date').text
@@ -64,16 +62,16 @@ def get_next_page(soup):
     try:
         url = soup.find("a", {"aria-label": "Next"}).get("href")
         return "https://in.indeed.com" + url
-    except:
+    except AttributeError:
         return None
 
 # function to save dataframe to xlsx
 def save_to_xlsx(df):
-    df.to_excel('job_list.xlsx', encoding='utf-8', columns=["Title","Company","Location","Salary","Today's date","Posted","Link"])
+    df.to_excel(filename, encoding='utf-8', columns=["Title","Company","Location","Salary","Today's date","Posted","Link"])
 
 # function to upload xlsx to amazon s3 -> For heroku deployment
 def to_aws():
-    data = open('job_list.xlsx', 'rb')
+    data = open(filename, 'rb')
     # connect to AWS
     s3 = boto3.resource(
         's3',
@@ -82,7 +80,7 @@ def to_aws():
         config=Config(signature_version='s3v4')
     )
     # file upload
-    s3.Bucket(BUCKET_NAME).put_object(Key='job_list.xlsx', Body=data, ACL='public-read')
+    s3.Bucket(BUCKET_NAME).put_object(Key=filename, Body=data, ACL='public-read')
 
 # main function
 def extract_job(keyword=None,location=None):
@@ -92,7 +90,7 @@ def extract_job(keyword=None,location=None):
     if not location and not keyword:
         return 0
     url = generate_url(keyword,location)
-    for i in range(4):
+    for _ in range(4):
         c = extract_data(url)
         if not url:
             break
